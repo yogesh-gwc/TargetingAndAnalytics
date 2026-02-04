@@ -51,10 +51,10 @@ interface Props {
 }
 
 const READ_ONLY_COLUMNS = new Set([
-    "Radia/Prisma Package Name",
-    "Placement Name",
-    "Buy Model",
-  ]);
+  "Radia/Prisma Package Name",
+  "Placement Name",
+  "Buy Model",
+]);
 
 export default function TargetingAndAnalyicsTable({
   data,
@@ -126,7 +126,10 @@ export default function TargetingAndAnalyicsTable({
                     <DropdownMenuCheckboxItem
                       key={column.id}
                       checked={column.getIsVisible()}
-                      onCheckedChange={column.getToggleVisibilityHandler()}
+                      onCheckedChange={(value) => {
+                        column.toggleVisibility(!!value);
+                      }}
+                      onSelect={(e) => e.preventDefault()} // 👈 KEEP MENU OPEN
                     >
                       {column.id}
                     </DropdownMenuCheckboxItem>
@@ -180,63 +183,62 @@ export default function TargetingAndAnalyicsTable({
         </Table>
       </div>
 
-     {/* EDIT DIALOG */}
-<Dialog open={!!selectedRow} onOpenChange={() => setSelectedRow(null)}>
-  <DialogContent className="max-w-3xl">
-    <DialogHeader>
-      <DialogTitle>Edit Row</DialogTitle>
-    </DialogHeader>
+      {/* EDIT DIALOG */}
+      <Dialog open={!!selectedRow} onOpenChange={() => setSelectedRow(null)}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Edit Row</DialogTitle>
+          </DialogHeader>
 
-    <ScrollArea className="h-[60vh] pr-4">
-      <div className="grid grid-cols-2 gap-4">
-        {Object.entries(editRow).map(([key, value]) => {
-          const isReadOnly = READ_ONLY_COLUMNS.has(key);
+          <ScrollArea className="h-[60vh] pr-4">
+            <div className="grid grid-cols-2 gap-4">
+              {Object.entries(editRow).map(([key, value]) => {
+                const isReadOnly = READ_ONLY_COLUMNS.has(key);
 
-          return (
-            <div key={key}>
-              <label className="text-xs text-muted-foreground">
-                {key}
-              </label>
+                return (
+                  <div key={key}>
+                    <label className="text-xs text-muted-foreground">
+                      {key}
+                    </label>
 
-              <Input
-                value={value}
-                readOnly={isReadOnly}
-                disabled={isReadOnly}
-                className={
-                  isReadOnly
-                    ? "bg-muted cursor-not-allowed text-muted-foreground"
-                    : ""
-                }
-                onChange={(e) => {
-                  if (!isReadOnly) {
-                    setEditRow((prev) => ({
-                      ...prev,
-                      [key]: e.target.value,
-                    }));
-                  }
-                }}
-              />
+                    <Input
+                      value={value}
+                      readOnly={isReadOnly}
+                      disabled={isReadOnly}
+                      className={
+                        isReadOnly
+                          ? "bg-muted cursor-not-allowed text-muted-foreground"
+                          : ""
+                      }
+                      onChange={(e) => {
+                        if (!isReadOnly) {
+                          setEditRow((prev) => ({
+                            ...prev,
+                            [key]: e.target.value,
+                          }));
+                        }
+                      }}
+                    />
+                  </div>
+                );
+              })}
             </div>
-          );
-        })}
-      </div>
-    </ScrollArea>
+          </ScrollArea>
 
-    <DialogFooter>
-      <Button
-        onClick={() => {
-          if (selectedRow) {
-            onUpdateRow(editRow, selectedRow);
-          }
-          setSelectedRow(null);
-        }}
-      >
-        Save Changes
-      </Button>
-    </DialogFooter>
-  </DialogContent>
-</Dialog>
-
+          <DialogFooter>
+            <Button
+              onClick={() => {
+                if (selectedRow) {
+                  onUpdateRow(editRow, selectedRow);
+                }
+                setSelectedRow(null);
+              }}
+            >
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
